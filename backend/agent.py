@@ -1,4 +1,4 @@
-﻿import os
+import os
 import sys
 import time
 import json
@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 # CONFIGURATION - Edit before running!
 # ==========================================
 API_URL = "https://cyber-defense-ai-assistant.onrender.com/watcher/ingest"
-BEARER_TOKEN = "YOUR_TOKEN_HERE"
+BEARER_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzg3MDgwMzQyfQ.VxnUAwxyO5er3GvnO9S9RsDDbOIrWy0X4HDIJpa3X7g"
 
 # ==========================================
 # INSTALL SETTINGS (do not change)

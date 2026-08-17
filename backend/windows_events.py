@@ -15,7 +15,7 @@ _last_read_time: datetime = None
 # formats each relevant event as a single human-readable line.
 _PS_SCRIPT = r"""
 param([string]$Since)
-$sinceDate = [datetime]::Parse($Since)
+$sinceDate = Get-Date -Date $Since
 $events = @()
 foreach ($log in @('Security','System','Application')) {
     try {

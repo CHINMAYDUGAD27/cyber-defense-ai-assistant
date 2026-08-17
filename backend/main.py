@@ -171,14 +171,15 @@ def analyze(
     safe_text = sanitize_input(request.log_text)
 
     settings = db.query(UserSettings).filter(UserSettings.user_email == user_email).first()
-    api_key = settings.groq_api_key if settings else None
+    # Use user-specific key → fall back to server-wide env variable
+    api_key = (settings.groq_api_key if settings else None) or os.getenv("GROQ_API_KEY", "")
 
     try:
         result = analyze_with_groq(safe_text, api_key=api_key)
     except ValueError:
         raise HTTPException(
             status_code=400,
-            detail="No Groq API key configured — add one in Settings before running analysis."
+            detail="No Groq API key configured — set GROQ_API_KEY in your server environment."
         )
 
     trigger_str = ", ".join(result.get("trigger_phrases", []))
@@ -202,6 +203,7 @@ def analyze(
 
     result["id"] = incident.id
     result["created_at"] = str(incident.created_at)
+    result["mitre_tactic"] = incident.mitre_tactic
     return result
 
 @app.post("/analyze/bulk")
@@ -218,12 +220,12 @@ async def analyze_bulk(
         raise HTTPException(status_code=400, detail="File too large — limit is 50 lines per upload.")
 
     settings = db.query(UserSettings).filter(UserSettings.user_email == user_email).first()
-    api_key = settings.groq_api_key if settings else None
+    api_key = (settings.groq_api_key if settings else None) or os.getenv("GROQ_API_KEY", "")
 
     if not api_key or not api_key.strip():
         raise HTTPException(
             status_code=400,
-            detail="No Groq API key configured — add one in Settings before running analysis."
+            detail="No Groq API key configured — set GROQ_API_KEY in your server environment."
         )
 
     results = []

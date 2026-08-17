@@ -2,8 +2,7 @@ import { useState, useRef } from 'react'
 import axios from 'axios'
 import RiskBadge from '../components/RiskBadge'
 import FollowupChat from '../components/FollowupChat'
-import { FiAlertTriangle, FiUpload, FiTrash2, FiPlay } from 'react-icons/fi'
-import { MdSecurity } from 'react-icons/md'
+import { FiAlertTriangle, FiUpload, FiTrash2, FiPlay, FiShield } from 'react-icons/fi'
 import { API_BASE } from '../config/api'
 
 function Analyze() {
@@ -399,9 +398,37 @@ function Analyze() {
           <FollowupChat incidentId={result.id} />
         </>
       ) : (
-        <p>
-          No threat detected. {result.reason}
-        </p>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '1rem',
+          padding: '2.5rem 1.5rem',
+          background: 'rgba(34,197,94,0.06)',
+          border: '1px solid rgba(34,197,94,0.25)',
+          borderRadius: '12px',
+          textAlign: 'center',
+        }}>
+          <div style={{
+            width: '64px', height: '64px',
+            background: 'rgba(34,197,94,0.15)',
+            borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '2rem',
+          }}>✅</div>
+          <h3 style={{ margin: 0, color: '#22c55e', fontSize: '1.2rem' }}>
+            No Crime Detected
+          </h3>
+          <p style={{ margin: 0, color: 'var(--text-secondary)', maxWidth: '420px', lineHeight: 1.6 }}>
+            {result.reason || 'This input appears safe. No known cyber threats, malware, phishing, or attack patterns were found.'}
+          </p>
+          <span style={{
+            fontSize: '0.78rem', color: 'var(--text-secondary)',
+            background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px'
+          }}>
+            🔒 Risk Level: Low — No action required
+          </span>
+        </div>
       )}
     </div>
   )}
