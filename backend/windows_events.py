@@ -13,9 +13,9 @@ _last_read_time: datetime = None
 
 # PowerShell script: reads Security + System logs since $Since,
 # formats each relevant event as a single human-readable line.
-_PS_SCRIPT = r"""
-param([string]$Since)
-$sinceDate = Get-Date -Date $Since
+def _get_ps_script(since_str: str) -> str:
+    return """
+$sinceDate = Get-Date -Date \"""" + since_str + """\"
 $events = @()
 foreach ($log in @('Security','System','Application')) {
     try {
@@ -83,7 +83,7 @@ def get_windows_events() -> List[str]:
                 "-NonInteractive",
                 "-ExecutionPolicy", "Bypass",
                 "-Command",
-                _PS_SCRIPT + f' -Since "{since_str}"',
+                _get_ps_script(since_str),
             ],
             capture_output=True,
             text=True,
