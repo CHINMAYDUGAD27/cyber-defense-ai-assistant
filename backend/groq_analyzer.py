@@ -75,7 +75,7 @@ Input:
     try:
         client = get_client(api_key)
         response = client.chat.completions.create(
-            model="openai/gpt-oss-120b",
+            model="openai/gpt-oss-20b",
             messages=[
                 {
                     "role": "system",
@@ -164,7 +164,7 @@ Question:
     try:
         client = get_client(api_key)
         response = client.chat.completions.create(
-            model="openai/gpt-oss-120b",
+            model="openai/gpt-oss-20b",
             messages=[
                 {
                     "role": "system",
