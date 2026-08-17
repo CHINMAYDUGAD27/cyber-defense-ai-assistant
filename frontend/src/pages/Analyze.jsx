@@ -1,3 +1,14 @@
+import { useState, useRef } from 'react'
+import axios from 'axios'
+import RiskBadge from '../components/RiskBadge'
+import FollowupChat from '../components/FollowupChat'
+import { FiAlertTriangle, FiUpload, FiTrash2, FiPlay } from 'react-icons/fi'
+import { MdSecurity } from 'react-icons/md'
+import { API_BASE } from '../config/api'
+
+function Analyze() {
+  const [logText, setLogText] = useState('')
+  const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
