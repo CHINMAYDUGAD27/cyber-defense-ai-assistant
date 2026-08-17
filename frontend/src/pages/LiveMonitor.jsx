@@ -505,18 +505,29 @@ export default function LiveMonitor() {
 
             {/* Step 3 */}
             <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '1rem' }}>
-              <p style={{ margin: '0 0 0.5rem', fontWeight: 700, fontSize: '0.85rem' }}>Step 3 — Run the Agent on that Device</p>
+              <p style={{ margin: '0 0 0.5rem', fontWeight: 700, fontSize: '0.85rem' }}>Step 3 — Run the Agent (once, forever!)</p>
+              <p style={{ margin: '0 0 0.6rem', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                Open <strong>PowerShell as Administrator</strong> and run:
+              </p>
               <code style={{
                 display: 'block', background: '#0f1117', borderRadius: '6px',
                 padding: '0.6rem 0.9rem', fontSize: '0.82rem', color: '#86efac',
               }}>
                 python agent.py
               </code>
-              <p style={{ margin: '0.5rem 0 0', fontSize: '0.77rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                🪟 <strong>Windows:</strong> Run as Administrator for full Security Event Log access.<br />
-                🐧 <strong>Linux/Mac:</strong> Run with <code>sudo python agent.py</code> for auth log access.<br />
-                That machine's real threats will now appear <strong style={{ color: '#22c55e' }}>live on this screen! 🎯</strong>
-              </p>
+              <div style={{
+                marginTop: '0.75rem', background: 'rgba(34,197,94,0.07)',
+                border: '1px solid rgba(34,197,94,0.25)', borderRadius: '6px',
+                padding: '0.75rem', fontSize: '0.78rem', lineHeight: 1.7,
+                color: 'var(--text-secondary)',
+              }}>
+                It will ask you: <strong style={{ color: '#fff' }}>Press 1 to Install as permanent background service</strong><br />
+                ✅ Agent installs itself into Windows Task Scheduler<br />
+                ✅ Auto-starts silently every time the computer turns on<br />
+                ✅ No window, no console, completely invisible<br />
+                ✅ Real threats appear live on this dashboard forever! 🎯<br /><br />
+                To remove it later: <code>python agent.py --uninstall</code>
+              </div>
             </div>
           </div>
         </div>
