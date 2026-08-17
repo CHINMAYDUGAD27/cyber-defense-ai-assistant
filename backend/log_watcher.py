@@ -144,6 +144,74 @@ def read_new_lines(path: str):
     return lines
 
 
+async def process_log_line(line: str, user_email: str):
+    """Processes a single log line, runs detectors, saves to DB, notifies, and broadcasts."""
+    db: Session = SessionLocal()
+    try:
+        result = run_detectors(line)
+        if not result:
+            return None
+
+        settings = db.query(UserSettings).filter(
+            UserSettings.user_email == user_email
+        ).first()
+
+        recs = result.get("recommendations", [])
+        incident = Incident(
+            input_text=line,
+            attack_type=result["attack_type"],
+            risk=result["risk"],
+            reason=result["reason"],
+            recommendations=", ".join(recs),
+            recommended_action=recs[0] if recs else None,
+            trigger_phrases=None,
+            source="watcher",
+        )
+        db.add(incident)
+        db.flush()
+
+        # Auto-notify
+        should_notify = {
+            "Low": settings.notify_low if settings else False,
+            "Medium": settings.notify_medium if settings else True,
+            "High": settings.notify_high if settings else True,
+            "Critical": settings.notify_critical if settings else True,
+        }
+        if should_notify.get(result["risk"], False):
+            notif = Notification(
+                user_email=user_email,
+                incident_id=incident.id,
+                message=(
+                    f"[Live Monitor] {result['risk']} risk: "
+                    f"{result['attack_type']} — {result['reason'][:80]}…"
+                ),
+                risk=result["risk"],
+            )
+            db.add(notif)
+
+        db.commit()
+
+        alert_data = {
+            "type": "alert",
+            "id": incident.id,
+            "attack_type": result["attack_type"],
+            "risk": result["risk"],
+            "reason": result["reason"],
+            "recommendations": recs,
+            "log_line": line,
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+        await manager.broadcast(alert_data)
+        return alert_data
+
+    except Exception as db_err:
+        db.rollback()
+        print(f"[Watcher] DB error: {db_err}")
+        return None
+    finally:
+        db.close()
+
+
 # ─── Core watcher loop ────────────────────────────────────────────────────────
 
 async def _watcher_loop(user_email: str, config: dict):
@@ -168,69 +236,8 @@ async def _watcher_loop(user_email: str, config: dict):
                 lines = read_new_lines(log_path)
 
             # ── Analyze & persist ─────────────────────────────────────────────
-            db: Session = SessionLocal()
-            try:
-                settings = db.query(UserSettings).filter(
-                    UserSettings.user_email == user_email
-                ).first()
-
-                for line in lines:
-                    result = run_detectors(line)
-                    if not result:
-                        continue
-
-                    recs = result.get("recommendations", [])
-                    incident = Incident(
-                        input_text=line,
-                        attack_type=result["attack_type"],
-                        risk=result["risk"],
-                        reason=result["reason"],
-                        recommendations=", ".join(recs),
-                        recommended_action=recs[0] if recs else None,
-                        trigger_phrases=None,
-                        source="watcher",
-                    )
-                    db.add(incident)
-                    db.flush()
-
-                    # Auto-notify
-                    should_notify = {
-                        "Low": settings.notify_low if settings else False,
-                        "Medium": settings.notify_medium if settings else True,
-                        "High": settings.notify_high if settings else True,
-                        "Critical": settings.notify_critical if settings else True,
-                    }
-                    if should_notify.get(result["risk"], False):
-                        notif = Notification(
-                            user_email=user_email,
-                            incident_id=incident.id,
-                            message=(
-                                f"[Live Monitor] {result['risk']} risk: "
-                                f"{result['attack_type']} — {result['reason'][:80]}…"
-                            ),
-                            risk=result["risk"],
-                        )
-                        db.add(notif)
-
-                    db.commit()
-
-                    # ── WebSocket broadcast ───────────────────────────────────
-                    await manager.broadcast({
-                        "type": "alert",
-                        "id": incident.id,
-                        "attack_type": result["attack_type"],
-                        "risk": result["risk"],
-                        "reason": result["reason"],
-                        "recommendations": recs,
-                        "log_line": line,
-                        "timestamp": datetime.utcnow().isoformat(),
-                    })
-
-            except Exception as db_err:
-                db.rollback()
-                print(f"[Watcher] DB error: {db_err}")
-            finally:
-                db.close()
+            for line in lines:
+                await process_log_line(line, user_email)
 
         except asyncio.CancelledError:
             break

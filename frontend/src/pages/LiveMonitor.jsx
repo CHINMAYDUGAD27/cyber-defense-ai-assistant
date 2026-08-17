@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import axios from 'axios'
-import { FiActivity, FiPlay, FiSquare, FiSettings, FiAlertTriangle, FiShield, FiClock, FiX } from 'react-icons/fi'
+import { FiActivity, FiPlay, FiSquare, FiSettings, FiAlertTriangle, FiShield, FiClock, FiX, FiDownload, FiCpu } from 'react-icons/fi'
 import { MdRadar } from 'react-icons/md'
 import { Link } from 'react-router-dom'
 
@@ -140,6 +140,8 @@ export default function LiveMonitor() {
     scan_interval: 5,
   })
   const [showConfig, setShowConfig] = useState(false)
+  const [showAgent, setShowAgent] = useState(false)
+  const [copied, setCopied] = useState(false)
   const [wsConnected, setWsConnected] = useState(false)
   const [counts, setCounts] = useState({ Critical: 0, High: 0, Medium: 0, Low: 0 })
   const [statusLoading, setStatusLoading] = useState(true)
@@ -322,6 +324,13 @@ export default function LiveMonitor() {
           <FiSettings /> {showConfig ? 'Hide Config' : 'Configure'}
         </button>
 
+        <button
+          onClick={() => setShowAgent(v => !v)}
+          style={btnStyle('#a855f7', true)}
+        >
+          <FiCpu /> {showAgent ? 'Hide Agent Setup' : '🔴 Connect Real Device'}
+        </button>
+
         {alerts.length > 0 && (
           <button onClick={clearAll} style={btnStyle('#6b7280', true)}>
             <FiX /> Clear Feed
@@ -423,6 +432,93 @@ export default function LiveMonitor() {
               Switch to <em>Real Log File</em> mode to monitor an actual system log.
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Agent Setup Panel ──────────────────────────────────────────────── */}
+      {showAgent && (
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(168,85,247,0.06), rgba(99,102,241,0.06))',
+          border: '1px solid rgba(168,85,247,0.3)',
+          borderRadius: '12px',
+          padding: '1.4rem',
+          marginBottom: '1.5rem',
+        }}>
+          <h3 style={{ margin: '0 0 0.5rem', color: '#a855f7', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FiCpu /> Connect a Real Device (Lightweight Agent)
+          </h3>
+          <p style={{ margin: '0 0 1rem', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+            Run the <strong style={{ color: '#a855f7' }}>agent.py</strong> script on any computer (Windows, Mac or Linux).
+            It will read that machine's real security logs and stream them live to this dashboard.
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* Step 1 */}
+            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '1rem' }}>
+              <p style={{ margin: '0 0 0.5rem', fontWeight: 700, fontSize: '0.85rem' }}>Step 1 — Download the Agent</p>
+              <a
+                href={`${API_BASE}/static/agent.py`}
+                download="agent.py"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+                  background: '#a855f7', color: '#fff', borderRadius: '7px',
+                  padding: '0.45rem 1rem', fontSize: '0.82rem', fontWeight: 600,
+                  textDecoration: 'none',
+                }}
+              >
+                <FiDownload /> Download agent.py
+              </a>
+              <p style={{ margin: '0.5rem 0 0', fontSize: '0.77rem', color: 'var(--text-secondary)' }}>
+                Or find it in your project at <code>backend/agent.py</code>
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '1rem' }}>
+              <p style={{ margin: '0 0 0.5rem', fontWeight: 700, fontSize: '0.85rem' }}>Step 2 — Set your credentials in agent.py</p>
+              <p style={{ margin: '0 0 0.6rem', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Open agent.py and paste these two values at the top:</p>
+              <code style={{
+                display: 'block', background: '#0f1117', borderRadius: '6px',
+                padding: '0.75rem', fontSize: '0.78rem', lineHeight: 1.8,
+                color: '#a5f3fc', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+              }}>
+                {`API_URL = "${API_BASE}/watcher/ingest"`}{`\n`}
+                {`BEARER_TOKEN = "${localStorage.getItem('token') || 'your_token_here'}"`}
+              </code>
+              <button
+                onClick={() => {
+                  const txt = `API_URL = "${API_BASE}/watcher/ingest"\nBEARER_TOKEN = "${localStorage.getItem('token') || ''}"`
+                  navigator.clipboard.writeText(txt)
+                  setCopied(true)
+                  setTimeout(() => setCopied(false), 2000)
+                }}
+                style={{
+                  marginTop: '0.6rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+                  background: 'transparent', border: '1px solid rgba(168,85,247,0.4)',
+                  borderRadius: '6px', color: '#a855f7', padding: '0.35rem 0.8rem',
+                  fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600,
+                }}
+              >
+                {copied ? '✅ Copied!' : '📋 Copy to Clipboard'}
+              </button>
+            </div>
+
+            {/* Step 3 */}
+            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '1rem' }}>
+              <p style={{ margin: '0 0 0.5rem', fontWeight: 700, fontSize: '0.85rem' }}>Step 3 — Run the Agent on that Device</p>
+              <code style={{
+                display: 'block', background: '#0f1117', borderRadius: '6px',
+                padding: '0.6rem 0.9rem', fontSize: '0.82rem', color: '#86efac',
+              }}>
+                python agent.py
+              </code>
+              <p style={{ margin: '0.5rem 0 0', fontSize: '0.77rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                🪟 <strong>Windows:</strong> Run as Administrator for full Security Event Log access.<br />
+                🐧 <strong>Linux/Mac:</strong> Run with <code>sudo python agent.py</code> for auth log access.<br />
+                That machine's real threats will now appear <strong style={{ color: '#22c55e' }}>live on this screen! 🎯</strong>
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
