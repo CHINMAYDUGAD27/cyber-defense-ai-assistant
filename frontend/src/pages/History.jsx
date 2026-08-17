@@ -151,7 +151,25 @@ function History() {
                       }}
                     >
                       <td style={tdStyle}>#{inc.id}</td>
-                      <td style={tdStyle}>{inc.attack_type || 'None'}</td>
+                      <td style={tdStyle}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                          <span>{inc.attack_type || 'None'}</span>
+                          {inc.mitre_tactic && (
+                            <span style={{
+                              background: 'rgba(56, 189, 248, 0.1)',
+                              border: '1px solid rgba(56, 189, 248, 0.3)',
+                              color: '#38bdf8',
+                              padding: '1px 6px',
+                              borderRadius: '4px',
+                              fontSize: '0.65rem',
+                              fontWeight: 600,
+                              alignSelf: 'flex-start',
+                            }}>
+                              🎯 {inc.mitre_tactic}
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td style={tdStyle}><RiskBadge risk={inc.risk} /></td>
                       <td style={{ ...tdStyle, color: 'var(--text-secondary)', maxWidth: '220px' }}>
                         {inc.reason}

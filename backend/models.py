@@ -13,6 +13,7 @@ class Incident(Base):
     recommendations = Column(Text, nullable=False)   # comma-joined list
     recommended_action = Column(Text, nullable=True)  # Phase 2: single primary action
     trigger_phrases = Column(Text, nullable=True)     # Phase 3: comma-joined highlight substrings
+    mitre_tactic = Column(String, nullable=True)      # XSIAM Phase 1: MITRE ATT&CK Tactic
     source = Column(String, default="manual", nullable=False)  # "manual" | "watcher" (pre-detection)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

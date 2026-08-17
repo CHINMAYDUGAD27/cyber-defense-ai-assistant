@@ -33,6 +33,7 @@ def analyze_sql_injection(text: str) -> dict:
     return {
         "detected": True,
         "attack_type": "SQL Injection",
+        "mitre_tactic": "T1190 - Exploit Public-Facing Application",
         "risk": risk,
         "reason": f"Detected SQL injection patterns: {', '.join(hits[:4])}.",
         "recommendations": [

@@ -36,6 +36,7 @@ Return ONLY valid JSON with the following schema:
 {{
     "detected": true,
     "attack_type": "Phishing",
+    "mitre_tactic": "T1566 - Phishing",
     "risk": "High",
     "reason": "Detailed explanation of why this is dangerous.",
     "recommended_action": "Block sender IP and report to security team",
@@ -49,6 +50,7 @@ Return ONLY valid JSON with the following schema:
 }}
 
 Rules:
+- "mitre_tactic": Identify the exact MITRE ATT&CK tactic/technique ID and name (e.g., "T1110 - Brute Force", "T1059 - Command Execution"). If not applicable, return null.
 - "recommended_action": one concise primary action for the analyst (e.g. "Block sender IP", "Force password reset", "Report to bank fraud line")
 - "trigger_phrases": list of exact substrings from the input that most strongly indicate the threat. Include only strings that appear verbatim in the input. Maximum 6 phrases.
 - "risk": must be one of: Low, Medium, High, Critical
@@ -58,6 +60,7 @@ If no threat exists return:
 {{
     "detected": false,
     "attack_type": null,
+    "mitre_tactic": null,
     "risk": "Low",
     "reason": "No cyber threat detected.",
     "recommended_action": null,

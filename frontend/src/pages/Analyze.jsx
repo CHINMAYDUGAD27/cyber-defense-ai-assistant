@@ -336,7 +336,8 @@ function Analyze() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.75rem'
+                gap: '0.75rem',
+                flexWrap: 'wrap'
               }}
             >
               <h2 style={{ margin: 0 }}>
@@ -344,6 +345,20 @@ function Analyze() {
               </h2>
 
               <RiskBadge risk={result.risk} />
+              
+              {result.mitre_tactic && (
+                <span style={{
+                  background: 'rgba(56, 189, 248, 0.1)',
+                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                  color: '#38bdf8',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                }}>
+                  🎯 {result.mitre_tactic}
+                </span>
+              )}
             </div>
 
             <button

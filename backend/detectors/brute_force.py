@@ -25,6 +25,7 @@ def analyze_brute_force(log_text: str) -> dict:
     return {
         "detected": True,
         "attack_type": "Brute Force",
+        "mitre_tactic": "T1110 - Brute Force",
         "risk": risk,
         "reason": f"Detected {count} failed login attempts in the provided log.",
         "recommendations": [

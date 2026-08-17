@@ -78,6 +78,20 @@ function AlertCard({ alert, onDismiss }) {
           {alert.attack_type}
         </span>
         <RiskBadge risk={alert.risk} />
+        {alert.mitre_tactic && (
+          <span style={{
+            background: 'rgba(56, 189, 248, 0.1)',
+            border: '1px solid rgba(56, 189, 248, 0.3)',
+            color: '#38bdf8',
+            padding: '2px 8px',
+            borderRadius: '4px',
+            fontSize: '0.7rem',
+            fontWeight: 600,
+            whiteSpace: 'nowrap'
+          }}>
+            🎯 {alert.mitre_tactic}
+          </span>
+        )}
         <span style={{ marginLeft: 'auto', fontSize: '0.72rem', color: 'var(--text-secondary)', paddingRight: '1.5rem' }}>
           <FiClock style={{ verticalAlign: 'middle', marginRight: '3px' }} />
           {new Date(alert.timestamp + 'Z').toLocaleTimeString()}

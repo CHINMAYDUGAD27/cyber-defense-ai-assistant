@@ -191,6 +191,7 @@ def analyze(
         recommendations=", ".join(result["recommendations"]),
         recommended_action=result.get("recommended_action"),
         trigger_phrases=trigger_str if trigger_str else None,
+        mitre_tactic=result.get("mitre_tactic"),
     )
     db.add(incident)
     db.commit()

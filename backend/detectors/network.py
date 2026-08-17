@@ -45,11 +45,13 @@ def analyze_network(text: str) -> dict:
     if many_ips:
         reasons.append("involves an unusually high number of distinct IP addresses")
 
+    hits = reasons
     return {
         "detected": True,
-        "attack_type": "Suspicious Network Activity",
+        "attack_type": "Network Intrusion / Scanning",
+        "mitre_tactic": "T1046 - Network Service Discovery",
         "risk": risk,
-        "reason": f"Input flagged because it {' and '.join(reasons)}.",
+        "reason": f"Detected anomalies: {', '.join(hits)}",
         "recommendations": [
             "Block the suspicious IP addresses and ports at the firewall.",
             "Review network traffic logs for the affected time window.",

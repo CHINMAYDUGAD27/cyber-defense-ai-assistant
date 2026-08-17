@@ -165,6 +165,7 @@ async def process_log_line(line: str, user_email: str):
             recommendations=", ".join(recs),
             recommended_action=recs[0] if recs else None,
             trigger_phrases=None,
+            mitre_tactic=result.get("mitre_tactic"),
             source="watcher",
         )
         db.add(incident)
@@ -195,6 +196,7 @@ async def process_log_line(line: str, user_email: str):
             "type": "alert",
             "id": incident.id,
             "attack_type": result["attack_type"],
+            "mitre_tactic": result.get("mitre_tactic"),
             "risk": result["risk"],
             "reason": result["reason"],
             "recommendations": recs,

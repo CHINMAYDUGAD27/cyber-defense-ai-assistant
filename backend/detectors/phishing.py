@@ -41,7 +41,8 @@ def analyze_phishing(text: str) -> dict:
 
     return {
         "detected": True,
-        "attack_type": "Phishing",
+        "attack_type": "Phishing / Social Engineering",
+        "mitre_tactic": "T1566 - Phishing",
         "risk": risk,
         "reason": f"Email flagged because it {' and '.join(reasons)}.",
         "recommendations": [
