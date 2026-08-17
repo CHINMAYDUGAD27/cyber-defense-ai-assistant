@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { API_BASE } from '../config/api'
-import { FiBell, FiMoon, FiSun, FiSave, FiCheckCircle, FiKey, FiEye, FiEyeOff, FiAlertCircle } from 'react-icons/fi'
+import { FiBell, FiMoon, FiSun, FiSave, FiCheckCircle, FiKey } from 'react-icons/fi'
 
 function Toggle({ checked, onChange, label, description }) {
   return (
@@ -47,7 +47,7 @@ function Settings() {
   const [loading, setLoading] = useState(true)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState(null)
-  const [showKey, setShowKey] = useState(false)
+
 
   const token = localStorage.getItem('token')
   const headers = { Authorization: `Bearer ${token}` }
@@ -101,92 +101,23 @@ function Settings() {
               borderRadius: '8px',
               padding: '1.25rem',
             }}>
-              {!settings.groq_api_key && (
-                <div style={{
-                  display: 'flex', alignItems: 'flex-start', gap: '0.6rem',
-                  backgroundColor: 'var(--risk-medium)15',
-                  border: '1px solid var(--risk-medium)40',
-                  color: 'var(--text-primary)',
-                  padding: '0.85rem 1rem',
-                  borderRadius: '6px',
-                  marginBottom: '1rem',
-                  fontSize: '0.85rem',
-                  lineHeight: 1.5,
-                }}>
-                  <FiAlertCircle style={{ color: 'var(--risk-medium)', fontSize: '1.2rem', flexShrink: 0, marginTop: '2px' }} />
-                  <div>
-                    <strong>API Key Required:</strong> AI analysis will not work until a valid Groq API key is configured.
-                  </div>
+              <div style={{
+                display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
+                backgroundColor: 'rgba(99,102,241,0.08)',
+                border: '1px solid rgba(99,102,241,0.25)',
+                borderRadius: '8px',
+                padding: '1rem',
+              }}>
+                <FiKey style={{ color: 'var(--accent)', fontSize: '1.3rem', flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <p style={{ margin: '0 0 0.4rem', fontWeight: 600, fontSize: '0.9rem' }}>Groq API Key</p>
+                  <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                    The Groq API key is configured securely on the server via an environment variable (<code>GROQ_API_KEY</code>).<br />
+                    It cannot be changed from the website. To update it, set <code>GROQ_API_KEY</code> in your server's
+                    environment variables (e.g. Render → Environment tab) and redeploy.
+                  </p>
                 </div>
-              )}
-              
-              <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
-                Groq API Key
-              </label>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                {settings.groq_api_key && settings.groq_api_key.includes('****') ? (
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', width: '100%' }}>
-                    <div style={{
-                      flex: 1, padding: '0.65rem 1rem', backgroundColor: 'var(--bg-main)',
-                      border: '1px solid var(--border-color)', borderRadius: '6px',
-                      color: 'var(--text-secondary)', fontSize: '0.9rem', fontFamily: 'monospace'
-                    }}>
-                      {settings.groq_api_key}
-                    </div>
-                    <button
-                      onClick={() => update('groq_api_key', '')}
-                      style={{
-                        padding: '0.65rem 1rem', background: 'none', border: '1px solid var(--border-color)',
-                        borderRadius: '6px', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.85rem'
-                      }}
-                    >
-                      Replace
-                    </button>
-                  </div>
-                ) : (
-                  <div style={{ position: 'relative', flex: 1 }}>
-                    <input
-                      type={showKey ? 'text' : 'password'}
-                      name="groq-api-key"
-                      id="groq-api-key"
-                      autoComplete="new-password"
-                      data-lpignore="true"
-                      data-1p-ignore="true"
-                      value={settings.groq_api_key || ''}
-                      onChange={e => update('groq_api_key', e.target.value)}
-                      placeholder="gsk_..."
-                      style={{
-                        width: '100%',
-                        padding: '0.65rem 1rem',
-                        paddingRight: '2.5rem',
-                        backgroundColor: 'var(--bg-main)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '6px',
-                        color: 'var(--text-primary)',
-                        fontSize: '0.9rem',
-                        fontFamily: 'monospace',
-                      }}
-                    />
-                    <button
-                      onClick={() => setShowKey(!showKey)}
-                      title={showKey ? "Hide key" : "Show key"}
-                      style={{
-                        position: 'absolute', right: '0.5rem', top: '50%',
-                        transform: 'translateY(-50%)',
-                        background: 'none', border: 'none',
-                        color: 'var(--text-secondary)',
-                        cursor: 'pointer', display: 'flex', alignItems: 'center',
-                        padding: '4px',
-                      }}
-                    >
-                      {showKey ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-                    </button>
-                  </div>
-                )}
               </div>
-              <p style={{ margin: '0.6rem 0 0', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                Your key is stored securely and never displayed in plain text after saving.
-              </p>
             </div>
           </div>
 
