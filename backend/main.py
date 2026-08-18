@@ -95,6 +95,10 @@ class FollowupRequest(BaseModel):
     question: str
 
 
+class PasswordChangeRequest(BaseModel):
+    new_password: str
+
+
 def normalize_email(email: str) -> str:
     """Keep login consistent across keyboards, browsers, and older accounts."""
     return email.strip().lower()
@@ -196,6 +200,26 @@ def logout():
 @app.get("/auth/me")
 def get_me(user_email: str = Depends(get_current_user)):
     return {"email": user_email}
+
+
+@app.post("/auth/change-password")
+def change_password(
+    payload: PasswordChangeRequest,
+    db: Session = Depends(get_db),
+    user_email: str = Depends(get_current_user),
+):
+    if len(payload.new_password) < 8:
+        raise HTTPException(status_code=400, detail="Password must contain at least 8 characters")
+
+    user = db.query(User).filter(
+        sqlfunc.lower(User.email) == normalize_email(user_email)
+    ).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Account no longer exists")
+
+    user.hashed_password = hash_password(payload.new_password)
+    db.commit()
+    return {"ok": True}
 
 # ─── Analyze ─────────────────────────────────────────────────────────────────
 @app.post("/analyze")

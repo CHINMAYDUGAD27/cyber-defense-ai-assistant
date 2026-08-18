@@ -6,6 +6,10 @@ import { API_BASE } from '../config/api'
 function Profile() {
   const [email, setEmail] = useState(null)
   const [error, setError] = useState(null)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordMessage, setPasswordMessage] = useState(null)
+  const [passwordLoading, setPasswordLoading] = useState(false)
   const navigate = useNavigate()
 
   const [stats, setStats] = useState(null)
@@ -66,6 +70,36 @@ function Profile() {
     navigate('/login')
   }
 
+  const handlePasswordChange = async (event) => {
+    event.preventDefault()
+    setPasswordMessage(null)
+
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage({ type: 'error', text: 'The new passwords do not match.' })
+      return
+    }
+
+    setPasswordLoading(true)
+    try {
+      const token = localStorage.getItem('token') || ''
+      await axios.post(
+        `${API_BASE}/auth/change-password`,
+        { new_password: newPassword },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      setNewPassword('')
+      setConfirmPassword('')
+      setPasswordMessage({ type: 'success', text: 'Password updated. You can now use it to log in on your phone.' })
+    } catch (err) {
+      setPasswordMessage({
+        type: 'error',
+        text: err.response?.data?.detail || 'Could not update password. Please sign in again.'
+      })
+    } finally {
+      setPasswordLoading(false)
+    }
+  }
+
   return (
     <div style={{ padding: '2rem', maxWidth: '500px' }}>
       <h1 style={{ marginTop: 0 }}>Profile</h1>
@@ -100,6 +134,40 @@ function Profile() {
               </p>
             </div>
           </div>
+
+          <form onSubmit={handlePasswordChange} style={{ marginBottom: '1.5rem' }}>
+            <h2 style={{ fontSize: '1rem', margin: '0 0 0.75rem' }}>Change password</h2>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
+              placeholder="New password (8+ characters)"
+              minLength="8"
+              required
+              style={{ width: '100%', boxSizing: 'border-box', marginBottom: '0.6rem', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
+            />
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              placeholder="Confirm new password"
+              minLength="8"
+              required
+              style={{ width: '100%', boxSizing: 'border-box', marginBottom: '0.75rem', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-main)', color: 'var(--text-primary)' }}
+            />
+            {passwordMessage && (
+              <p style={{ color: passwordMessage.type === 'success' ? 'var(--risk-low)' : 'var(--risk-critical)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+                {passwordMessage.text}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={passwordLoading}
+              style={{ backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.6rem 1.2rem', fontWeight: 'bold', cursor: passwordLoading ? 'wait' : 'pointer' }}
+            >
+              {passwordLoading ? 'Updating…' : 'Update password'}
+            </button>
+          </form>
 
           <button
             onClick={handleLogout}
