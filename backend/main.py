@@ -37,9 +37,12 @@ _frontend_origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
-_prod_origin = os.getenv("FRONTEND_URL", "").strip()
-if _prod_origin:
-    _frontend_origins.append(_prod_origin)
+_prod_origins = os.getenv("FRONTEND_URL", "")
+_frontend_origins.extend(
+    origin.strip().rstrip("/")
+    for origin in _prod_origins.split(",")
+    if origin.strip()
+)
 
 app.add_middleware(
     CORSMiddleware,

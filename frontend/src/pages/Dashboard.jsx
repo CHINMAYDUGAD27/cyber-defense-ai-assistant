@@ -48,8 +48,14 @@ function Dashboard() {
         setTrends(trendsRes.data)
         setIncidentsData(incRes.data)
       })
-      .catch(() => {
-        setError('Could not load dashboard. Is the backend running?')
+      .catch((err) => {
+        if (err.response?.status === 401) {
+          setError('Your session has expired. Redirecting to sign in…')
+          return
+        }
+
+        const detail = err.response?.data?.detail
+        setError(detail ? `Could not load dashboard: ${detail}` : 'Could not load dashboard. Please try again.')
       })
       .finally(() => {
         setLoading(false)
