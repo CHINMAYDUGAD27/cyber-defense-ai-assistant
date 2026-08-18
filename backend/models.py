@@ -6,6 +6,9 @@ class Incident(Base):
     __tablename__ = "incidents"
 
     id = Column(Integer, primary_key=True, index=True)
+    # Older shared incidents remain unassigned; all new incidents are owned by
+    # the authenticated user who created or ingested them.
+    user_email = Column(String, nullable=True, index=True)
     input_text = Column(Text, nullable=False)
     attack_type = Column(String, nullable=True)
     risk = Column(String, nullable=False)

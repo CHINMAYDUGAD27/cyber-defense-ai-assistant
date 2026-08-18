@@ -38,6 +38,7 @@ def ensure_incident_schema():
         "trigger_phrases": "TEXT",
         "mitre_tactic": "VARCHAR",
         "source": "VARCHAR DEFAULT 'manual' NOT NULL",
+        "user_email": "VARCHAR",
     }
 
     with engine.begin() as connection:
@@ -246,6 +247,7 @@ def analyze(
     trigger_str = ", ".join(result.get("trigger_phrases", []))
 
     incident = Incident(
+        user_email=user_email,
         input_text=safe_text,
         attack_type=result["attack_type"],
         risk=result["risk"],
@@ -307,6 +309,7 @@ async def analyze_bulk(
 
         trigger_str = ", ".join(result.get("trigger_phrases", []))
         incident = Incident(
+            user_email=user_email,
             input_text=safe_line,
             attack_type=result["attack_type"],
             risk=result["risk"],
@@ -346,7 +349,10 @@ def ask_about_incident(
     db: Session = Depends(get_db),
     user_email: str = Depends(get_current_user)
 ):
-    incident = db.query(Incident).filter(Incident.id == incident_id).first()
+    incident = db.query(Incident).filter(
+        Incident.id == incident_id,
+        Incident.user_email == user_email,
+    ).first()
     if not incident:
         raise HTTPException(status_code=404, detail="Incident not found")
 
@@ -372,7 +378,9 @@ def ask_about_incident(
 # ─── Incidents ────────────────────────────────────────────────────────────────
 @app.get("/incidents")
 def get_incidents(db: Session = Depends(get_db), user_email: str = Depends(get_current_user)):
-    incidents = db.query(Incident).order_by(Incident.created_at.desc()).all()
+    incidents = db.query(Incident).filter(
+        Incident.user_email == user_email
+    ).order_by(Incident.created_at.desc()).all()
     return [
         {
             "id": i.id,
@@ -388,7 +396,10 @@ def get_incidents(db: Session = Depends(get_db), user_email: str = Depends(get_c
 
 @app.get("/incidents/{incident_id}")
 def get_incident(incident_id: int, db: Session = Depends(get_db), user_email: str = Depends(get_current_user)):
-    incident = db.query(Incident).filter(Incident.id == incident_id).first()
+    incident = db.query(Incident).filter(
+        Incident.id == incident_id,
+        Incident.user_email == user_email,
+    ).first()
     if not incident:
         raise HTTPException(status_code=404, detail="Incident not found")
     return {
@@ -405,7 +416,10 @@ def get_incident(incident_id: int, db: Session = Depends(get_db), user_email: st
 
 @app.get("/incidents/{incident_id}/report")
 def download_report(incident_id: int, db: Session = Depends(get_db), user_email: str = Depends(get_current_user)):
-    incident = db.query(Incident).filter(Incident.id == incident_id).first()
+    incident = db.query(Incident).filter(
+        Incident.id == incident_id,
+        Incident.user_email == user_email,
+    ).first()
     if not incident:
         raise HTTPException(status_code=404, detail="Incident not found")
 
@@ -434,7 +448,7 @@ def get_dashboard_stats(
     from_date: Optional[str] = None,
     to_date: Optional[str] = None,
 ):
-    query = db.query(Incident)
+    query = db.query(Incident).filter(Incident.user_email == user_email)
     if from_date:
         try:
             query = query.filter(Incident.created_at >= datetime.strptime(from_date, "%Y-%m-%d"))
@@ -486,6 +500,7 @@ def get_dashboard_trends(
         end_dt = datetime.utcnow()
 
     incidents = db.query(Incident).filter(
+        Incident.user_email == user_email,
         Incident.created_at >= start_dt,
         Incident.created_at < end_dt,
     ).all()
@@ -538,7 +553,7 @@ def get_notifications(db: Session = Depends(get_db), user_email: str = Depends(g
         
     incidents = (
         db.query(Incident)
-        .filter(Incident.risk.in_(enabled_risks))
+        .filter(Incident.user_email == user_email, Incident.risk.in_(enabled_risks))
         .order_by(Incident.created_at.desc())
         .limit(20)
         .all()
@@ -603,7 +618,7 @@ def mark_all_read(db: Session = Depends(get_db), user_email: str = Depends(get_c
         
     incidents = (
         db.query(Incident)
-        .filter(Incident.risk.in_(enabled_risks))
+        .filter(Incident.user_email == user_email, Incident.risk.in_(enabled_risks))
         .order_by(Incident.created_at.desc())
         .limit(20)
         .all()
@@ -706,6 +721,7 @@ def download_summary_report(
         raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
 
     incidents = db.query(Incident).filter(
+        Incident.user_email == user_email,
         Incident.created_at >= from_dt,
         Incident.created_at < to_dt
     ).all()

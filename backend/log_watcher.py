@@ -105,7 +105,7 @@ def get_simulated_line() -> str:
 
 def run_detectors(line: str):
     """Run all rule-based detectors on a single log line. Returns first hit or None."""
-    for fn in [analyze_sql_injection, analyze_brute_force, analyze_network, analyze_malware, analyze_phishing]:
+    for fn in [analyze_sql_injection, analyze_brute_force, analyze_network, analyze_malware, analyze_phishing, analyze_windows_events]:
         result = fn(line)
         if result.get("detected"):
             return result
@@ -158,6 +158,7 @@ async def process_log_line(line: str, user_email: str):
 
         recs = result.get("recommendations", [])
         incident = Incident(
+            user_email=user_email,
             input_text=line,
             attack_type=result["attack_type"],
             risk=result["risk"],

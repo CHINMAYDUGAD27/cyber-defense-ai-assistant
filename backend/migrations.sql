@@ -7,6 +7,10 @@ ALTER TABLE incidents ADD COLUMN IF NOT EXISTS trigger_phrases TEXT;
 -- XSIAM: Add MITRE ATT&CK technique/tactic metadata to incidents
 ALTER TABLE incidents ADD COLUMN IF NOT EXISTS mitre_tactic VARCHAR;
 
+-- Account isolation: incidents created after this migration belong to one user.
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS user_email VARCHAR;
+CREATE INDEX IF NOT EXISTS ix_incidents_user_email ON incidents(user_email);
+
 -- PHASE 5: Create notifications table
 CREATE TABLE IF NOT EXISTS notifications (
     id SERIAL PRIMARY KEY,
