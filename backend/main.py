@@ -94,6 +94,11 @@ class UserLogin(BaseModel):
 class FollowupRequest(BaseModel):
     question: str
 
+
+def normalize_email(email: str) -> str:
+    """Keep login consistent across keyboards, browsers, and older accounts."""
+    return email.strip().lower()
+
 class UserSettingsUpdate(BaseModel):
     notify_low: bool = False
     notify_medium: bool = True
@@ -150,11 +155,12 @@ def health_check():
 # ─── Auth ─────────────────────────────────────────────────────────────────────
 @app.post("/auth/signup")
 def signup(user: UserCreate, db: Session = Depends(get_db)):
-    existing = db.query(User).filter(User.email == user.email).first()
+    email = normalize_email(user.email)
+    existing = db.query(User).filter(sqlfunc.lower(User.email) == email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    new_user = User(email=user.email, hashed_password=hash_password(user.password))
+    new_user = User(email=email, hashed_password=hash_password(user.password))
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -169,7 +175,8 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
 @app.post("/auth/login")
 @limiter.limit("10/minute")  # Phase 8: rate limit login to 10 attempts/min per IP
 def login(request: Request, user: UserLogin, db: Session = Depends(get_db)):
-    db_user = db.query(User).filter(User.email == user.email).first()
+    email = normalize_email(user.email)
+    db_user = db.query(User).filter(sqlfunc.lower(User.email) == email).first()
     if not db_user or not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
