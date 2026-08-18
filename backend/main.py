@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
-from sqlalchemy import func as sqlfunc, cast, Date
+from sqlalchemy import func as sqlfunc, cast, Date, inspect, text
 from collections import Counter
 from database import engine, get_db, Base
 from models import Incident, User, Notification, UserSettings, WatcherConfig
@@ -24,6 +24,33 @@ from dotenv import load_dotenv
 load_dotenv()
 
 Base.metadata.create_all(bind=engine)
+
+
+def ensure_incident_schema():
+    """Add Incident fields that may be absent from databases created by older releases.
+
+    SQLAlchemy's create_all creates missing tables but never alters existing ones.
+    Without these additive migrations, querying Incident selects a non-existent
+    column and makes the dashboard fail with a server error.
+    """
+    required_columns = {
+        "recommended_action": "TEXT",
+        "trigger_phrases": "TEXT",
+        "mitre_tactic": "VARCHAR",
+        "source": "VARCHAR DEFAULT 'manual' NOT NULL",
+    }
+
+    with engine.begin() as connection:
+        existing_columns = {
+            column["name"]
+            for column in inspect(connection).get_columns("incidents")
+        }
+        for name, definition in required_columns.items():
+            if name not in existing_columns:
+                connection.execute(text(f"ALTER TABLE incidents ADD COLUMN {name} {definition}"))
+
+
+ensure_incident_schema()
 
 # ─── Rate limiter (Phase 8) ──────────────────────────────────────────────────
 limiter = Limiter(key_func=get_remote_address)
